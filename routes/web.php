@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\AuthController as AdminAuthController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\PropertyController as AdminPropertyController;
 use App\Http\Controllers\Admin\BookingController as AdminBookingController;
+use App\Http\Controllers\Admin\CalendarController as AdminCalendarController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [PropertyController::class, 'index'])->name('properties.index');
@@ -39,5 +40,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::patch('/bookings/{booking}/approve', [AdminBookingController::class, 'approve'])->name('bookings.approve');
         Route::patch('/bookings/{booking}/reject', [AdminBookingController::class, 'reject'])->name('bookings.reject');
         Route::delete('/bookings/{booking}', [AdminBookingController::class, 'destroy'])->name('bookings.destroy');
+
+        // Calendar (occupancy overview + manual blocks)
+        Route::get('/kalender', [AdminCalendarController::class, 'index'])->name('calendar.index');
+        Route::post('/kalender/sperren', [AdminCalendarController::class, 'storeBlock'])->name('calendar.blocks.store');
+        Route::delete('/kalender/sperren/{block}', [AdminCalendarController::class, 'destroyBlock'])->name('calendar.blocks.destroy');
     });
 });

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
+use App\Models\PropertyBlock;
 use App\Support\BookingMailer;
 use Illuminate\Http\Request;
 
@@ -48,6 +49,10 @@ class BookingController extends Controller
 
     public function approve(Booking $booking)
     {
+        if (PropertyBlock::hasOverlap($booking->property_id, $booking->check_in->toDateString(), $booking->check_out->toDateString())) {
+            return back()->with('error', 'Dieser Zeitraum ist im Kalender manuell gesperrt. Bitte prüfen Sie die Sperre, bevor Sie bestätigen.');
+        }
+
         $booking->update(['status' => 'approved']);
 
         BookingMailer::sendApproved($booking);

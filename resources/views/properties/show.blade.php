@@ -321,6 +321,25 @@
                 <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/sk.js"></script>
                 <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ro.js"></script>
                 <script>
+                // Local calendar date as 'Y-m-d', without converting through UTC.
+                // dateObj.toISOString() shifts the date back by one day for anyone in a
+                // timezone ahead of UTC (e.g. Germany, Turkey) because it reads the UTC
+                // date of a *local* midnight instant instead of the local calendar date.
+                function toLocalYmd(date) {
+                    const y = date.getFullYear();
+                    const m = String(date.getMonth() + 1).padStart(2, '0');
+                    const d = String(date.getDate()).padStart(2, '0');
+                    return `${y}-${m}-${d}`;
+                }
+
+                // Parse a 'Y-m-d' string as a local-midnight Date (new Date('Y-m-d') parses
+                // as UTC midnight instead, which drifts a day off toLocalYmd() above once the
+                // visitor's timezone is ahead of UTC).
+                function parseYmd(str) {
+                    const [y, m, d] = str.split('-').map(Number);
+                    return new Date(y, m - 1, d);
+                }
+
                 function bookingForm() {
                     return {
                         checkIn: '',
@@ -361,7 +380,7 @@
 
                         initDatePickers() {
                             const self = this;
-                            const today = new Date().toISOString().split('T')[0];
+                            const today = toLocalYmd(new Date());
 
                             this.checkInPicker = flatpickr('#check_in', {
                                 locale: {{ Illuminate\Support\Js::from($flatpickrLocale) }},
@@ -369,7 +388,7 @@
                                 minDate: today,
                                 disable: this.bookedDates,
                                 onDayCreate: function(dObj, dStr, fp, dayElem) {
-                                    const dateStr = dayElem.dateObj.toISOString().split('T')[0];
+                                    const dateStr = toLocalYmd(dayElem.dateObj);
                                     if (self.bookedDates.includes(dateStr)) {
                                         dayElem.classList.add('booked');
                                     }
@@ -389,7 +408,7 @@
                                 minDate: today,
                                 disable: this.bookedDates,
                                 onDayCreate: function(dObj, dStr, fp, dayElem) {
-                                    const dateStr = dayElem.dateObj.toISOString().split('T')[0];
+                                    const dateStr = toLocalYmd(dayElem.dateObj);
                                     if (self.bookedDates.includes(dateStr)) {
                                         dayElem.classList.add('booked');
                                     }
@@ -408,8 +427,8 @@
 
                             if (!this.checkIn || !this.checkOut) return;
 
-                            const checkInDate = new Date(this.checkIn);
-                            const checkOutDate = new Date(this.checkOut);
+                            const checkInDate = parseYmd(this.checkIn);
+                            const checkOutDate = parseYmd(this.checkOut);
 
                             if (checkOutDate <= checkInDate) {
                                 this.dateError = {{ Illuminate\Support\Js::from(__('property.booking_js_checkout_after_checkin')) }};
@@ -421,9 +440,9 @@
                             this.nights = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
                             // Check for conflicts with booked dates
-                            const current = new Date(this.checkIn);
+                            const current = parseYmd(this.checkIn);
                             while (current < checkOutDate) {
-                                const dateStr = current.toISOString().split('T')[0];
+                                const dateStr = toLocalYmd(current);
                                 if (this.bookedDates.includes(dateStr)) {
                                     this.dateError = {{ Illuminate\Support\Js::from(__('property.booking_js_overlap')) }};
                                     return;

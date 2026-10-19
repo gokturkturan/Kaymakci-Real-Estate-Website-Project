@@ -76,6 +76,13 @@
                     </svg>
                     Immobilien
                 </a>
+                <a href="{{ route('admin.calendar.index') }}"
+                   class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors {{ request()->routeIs('admin.calendar.*') ? 'bg-gold-600 text-ivory-50' : 'text-ivory-300 hover:bg-navy-800 hover:text-ivory-50' }}">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3M5 11h14M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2zM9 15h.01M12 15h.01M15 15h.01M9 17.5h.01"/>
+                    </svg>
+                    Kalender
+                </a>
                 <a href="{{ route('admin.bookings.index') }}"
                    class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors relative {{ request()->routeIs('admin.bookings.*') ? 'bg-gold-600 text-ivory-50' : 'text-ivory-300 hover:bg-navy-800 hover:text-ivory-50' }}">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

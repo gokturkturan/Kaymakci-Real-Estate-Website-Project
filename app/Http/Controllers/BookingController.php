@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Booking;
 use App\Models\Property;
+use App\Models\PropertyBlock;
 use App\Support\BookingMailer;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -12,7 +13,10 @@ class BookingController extends Controller
 {
     public function getBookedDates(Property $property)
     {
-        $bookedDates = Booking::getBookedDates($property->id);
+        $bookedDates = array_values(array_unique(array_merge(
+            Booking::getBookedDates($property->id),
+            PropertyBlock::getBlockedDates($property->id)
+        )));
 
         return response()->json([
             'booked_dates' => $bookedDates,
@@ -39,8 +43,11 @@ class BookingController extends Controller
             'guests.required' => __('property.validation.guests_required'),
         ]);
 
-        // Check for overlapping bookings
-        if (Booking::hasOverlap($property->id, $validated['check_in'], $validated['check_out'])) {
+        // Check for overlapping bookings and manual (off-site) blocks
+        if (
+            Booking::hasOverlap($property->id, $validated['check_in'], $validated['check_out'])
+            || PropertyBlock::hasOverlap($property->id, $validated['check_in'], $validated['check_out'])
+        ) {
             return back()->with('error', __('booking.overlap_error'));
         }
 
