@@ -45,6 +45,12 @@
         </div>
     </div>
 
+    {{-- Hinweis, wenn eine per Klick begonnene Auswahl über den Monatswechsel hinweg läuft --}}
+    <div id="pending-selection-banner" class="hidden bg-gold-50 border border-gold-200 text-gold-900 rounded-xl px-4 py-3 mb-6 flex items-center justify-between gap-4 text-sm">
+        <span id="pending-selection-text"></span>
+        <button type="button" id="pending-selection-cancel" class="text-gold-800 hover:text-gold-900 font-medium underline whitespace-nowrap flex-shrink-0">Abbrechen</button>
+    </div>
+
     {{-- Add a manual block --}}
     <div id="manual-block-form" class="bg-ivory-50 rounded-2xl shadow-soft border border-ivory-200 p-4 sm:p-6 mb-6">
         <h3 class="font-serif text-lg font-semibold text-navy-900 mb-1">Zeitraum manuell sperren</h3>
@@ -150,6 +156,7 @@
                                                 @if($isPastCell) disabled @endif
                                                 class="day-cell flex-1 {{ $cellDate->isWeekend() ? 'bg-ivory-100/70' : '' }} {{ $todayDay === $d ? 'bg-gold-50' : '' }} border-r border-ivory-100/60 transition-colors p-0 {{ $isPastCell ? 'opacity-30 cursor-not-allowed' : 'hover:bg-gold-100/60 cursor-pointer' }}"
                                                 data-property-id="{{ $row['property']->id }}"
+                                                data-property-title="{{ $row['property']->title }}"
                                                 data-date="{{ $cellDate->format('Y-m-d') }}"
                                                 aria-label="{{ $cellDate->format('d.m.Y') }}"></button>
                                     @endfor
@@ -203,6 +210,38 @@
                 return `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}`;
             }
 
+            function formatDisplay(ymd) {
+                const [y, m, d] = ymd.split('-');
+                return `${d}.${m}.${y}`;
+            }
+
+            const PENDING_KEY = 'calendarBlockSelection';
+
+            function savePendingSelection(sel) {
+                try {
+                    if (sel) {
+                        sessionStorage.setItem(PENDING_KEY, JSON.stringify({
+                            propertyId: sel.propertyId,
+                            propertyTitle: sel.propertyTitle,
+                            date: sel.date,
+                        }));
+                    } else {
+                        sessionStorage.removeItem(PENDING_KEY);
+                    }
+                } catch (e) {
+                    // sessionStorage unavailable (private mode etc.) – selection just won't survive a month change
+                }
+            }
+
+            function loadPendingSelection() {
+                try {
+                    const raw = sessionStorage.getItem(PENDING_KEY);
+                    return raw ? JSON.parse(raw) : null;
+                } catch (e) {
+                    return null;
+                }
+            }
+
             // "Bis" ist gesperrt, bis "Von" gewählt ist, und kann danach kein Datum vor/an "Von" annehmen.
             const startInput = document.getElementById('start_date');
             const endInput = document.getElementById('end_date');
@@ -228,17 +267,42 @@
             const startHighlight = ['ring-2', 'ring-inset', 'ring-gold-500'];
             const rangeHighlight = ['bg-gold-200/70'];
 
-            let selStart = null; // { propertyId, date, el, rowEl }
+            let selStart = null; // { propertyId, propertyTitle, date, el, rowEl }
+
+            const todayYmd = (function () {
+                const n = new Date();
+                return `${n.getFullYear()}-${pad(n.getMonth() + 1)}-${pad(n.getDate())}`;
+            })();
 
             function clearRowState(rowEl) {
                 rowEl.querySelectorAll('.day-cell').forEach(function (c) {
-                    c.classList.remove(...startHighlight, ...rangeHighlight, 'opacity-30', 'cursor-not-allowed');
-                    c.classList.add('cursor-pointer');
+                    c.classList.remove(...startHighlight, ...rangeHighlight);
+                    // Leave past-day cells exactly as the server rendered them (permanently disabled).
+                    if (c.dataset.date < todayYmd) {
+                        return;
+                    }
                     c.disabled = false;
+                    c.classList.remove('opacity-30', 'cursor-not-allowed');
+                    c.classList.add('cursor-pointer');
                 });
                 rowEl.querySelectorAll('.block-popup').forEach(function (p) {
                     p.remove();
                 });
+            }
+
+            function updateBanner() {
+                const banner = document.getElementById('pending-selection-banner');
+                const text = document.getElementById('pending-selection-text');
+                if (!banner || !text) {
+                    return;
+                }
+                if (selStart) {
+                    text.textContent = 'Auswahl läuft: ' + selStart.propertyTitle + ' – ab ' + formatDisplay(selStart.date) +
+                        '. Wählen Sie jetzt den letzten Tag (auch in einem anderen Monat möglich).';
+                    banner.classList.remove('hidden');
+                } else {
+                    banner.classList.add('hidden');
+                }
             }
 
             function resetSelection() {
@@ -246,6 +310,8 @@
                     clearRowState(selStart.rowEl);
                 }
                 selStart = null;
+                savePendingSelection(null);
+                updateBanner();
             }
 
             function disableEarlierCells(rowEl, fromDate) {
@@ -272,8 +338,9 @@
                 });
 
                 const rowRect = rowEl.getBoundingClientRect();
-                const startRect = startCell.getBoundingClientRect();
                 const endRect = endCell.getBoundingClientRect();
+                // startCell can be null if the start day belongs to a month that isn't shown anymore.
+                const startRect = startCell ? startCell.getBoundingClientRect() : endRect;
                 const centerLeft = ((Math.min(startRect.left, endRect.left) + Math.max(startRect.right, endRect.right)) / 2) - rowRect.left;
 
                 const popup = document.createElement('div');
@@ -306,6 +373,7 @@
                     document.getElementById('end_date').disabled = false;
                     document.getElementById('end_date').value = addDays(lastDay, 1);
                     document.getElementById('label').value = input.value;
+                    savePendingSelection(null);
                     document.getElementById('manual-block-form').querySelector('form').submit();
                 });
 
@@ -317,15 +385,18 @@
             document.querySelectorAll('.day-cell').forEach(function (cell) {
                 cell.addEventListener('click', function () {
                     const propertyId = cell.dataset.propertyId;
+                    const propertyTitle = cell.dataset.propertyTitle;
                     const date = cell.dataset.date;
                     const rowEl = cell.closest('.relative');
 
                     // No selection yet, or switched to a different property's row: (re)start here.
                     if (!selStart || selStart.propertyId !== propertyId) {
                         resetSelection();
-                        selStart = { propertyId: propertyId, date: date, el: cell, rowEl: rowEl };
+                        selStart = { propertyId: propertyId, propertyTitle: propertyTitle, date: date, el: cell, rowEl: rowEl };
                         cell.classList.add(...startHighlight);
                         disableEarlierCells(rowEl, date);
+                        savePendingSelection(selStart);
+                        updateBanner();
                         return;
                     }
 
@@ -344,6 +415,45 @@
                     showLabelPopup(rowEl, startCell, cell, propertyId, startDate, lastDay);
                 });
             });
+
+            const bannerCancelBtn = document.getElementById('pending-selection-cancel');
+            if (bannerCancelBtn) {
+                bannerCancelBtn.addEventListener('click', function () {
+                    resetSelection();
+                });
+            }
+
+            // Restore a selection that was started last month (or earlier) and carried over via
+            // sessionStorage, so clicking "Von"-day in one month and the end day in a later month works.
+            (function restorePendingSelection() {
+                const pending = loadPendingSelection();
+                if (!pending) {
+                    return;
+                }
+
+                const anyCellForProperty = document.querySelector('.day-cell[data-property-id="' + pending.propertyId + '"]');
+                if (!anyCellForProperty) {
+                    savePendingSelection(null);
+                    return;
+                }
+
+                const rowEl = anyCellForProperty.closest('.relative');
+                const startCell = rowEl.querySelector('.day-cell[data-date="' + pending.date + '"]') || null;
+
+                selStart = {
+                    propertyId: pending.propertyId,
+                    propertyTitle: pending.propertyTitle,
+                    date: pending.date,
+                    el: startCell,
+                    rowEl: rowEl,
+                };
+
+                if (startCell) {
+                    startCell.classList.add(...startHighlight);
+                }
+                disableEarlierCells(rowEl, pending.date);
+                updateBanner();
+            })();
         })();
     </script>
 @endsection
