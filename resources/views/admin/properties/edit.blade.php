@@ -42,7 +42,8 @@
                     <div class="md:col-span-2">
                         <label for="description-editor" class="block text-sm font-medium text-ivory-700 mb-1">Beschreibung *</label>
                         <div id="description-editor" class="bg-white"></div>
-                        <textarea id="description" name="description" class="hidden" required>{{ old('description', $property->description) }}</textarea>
+                        <p id="description-error" class="hidden text-sm text-red-600 mt-1">Bitte geben Sie eine Beschreibung ein.</p>
+                        <textarea id="description" name="description" class="hidden">{{ old('description', $property->description) }}</textarea>
                         <p class="text-xs text-ivory-500 mt-1">Titel &amp; Beschreibung werden beim Speichern automatisch ins Englische, Polnische, Slowakische und Rumänische übersetzt – dafür gibt es keine eigenen Felder. Formatierung (fett, kursiv, Schriftgröße) wird nur auf Deutsch angezeigt; in den übersetzten Sprachen erscheint die Beschreibung als Fließtext.</p>
                     </div>
 
@@ -458,8 +459,34 @@
             descriptionQuill.root.innerHTML = descriptionTextarea.value;
         }
 
-        document.getElementById('property-form').addEventListener('submit', function () {
-            descriptionTextarea.value = descriptionQuill.root.innerHTML;
+        // The real <textarea> is hidden (Quill is the visible editor), so it can't carry the browser's
+        // "required" check – an empty hidden required field blocks the submit with
+        // "An invalid form control ... is not focusable". Keep it in sync and validate the editor ourselves.
+        const descriptionError = document.getElementById('description-error');
+        const descriptionEditorEl = document.getElementById('description-editor');
+
+        function syncDescription() {
+            const isEmpty = descriptionQuill.getText().trim() === '';
+            descriptionTextarea.value = isEmpty ? '' : descriptionQuill.root.innerHTML;
+            return !isEmpty;
+        }
+
+        descriptionQuill.on('text-change', function () {
+            if (syncDescription()) {
+                descriptionError.classList.add('hidden');
+                descriptionEditorEl.classList.remove('ring-2', 'ring-red-400');
+            }
+        });
+
+        document.getElementById('property-form').addEventListener('submit', function (event) {
+            if (!syncDescription()) {
+                event.preventDefault();
+                descriptionError.classList.remove('hidden');
+                descriptionEditorEl.classList.add('ring-2', 'ring-red-400');
+                descriptionEditorEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                descriptionQuill.focus();
+                return;
+            }
 
             const btn = document.getElementById('submit-btn');
             btn.disabled = true;
