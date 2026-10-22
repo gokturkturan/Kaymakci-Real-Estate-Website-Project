@@ -80,7 +80,22 @@
         </script>
     @endif
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <style>[x-cloak]{display:none !important;}</style>
+    <style>
+        [x-cloak]{display:none !important;}
+        /* Never allow accidental horizontal scrolling on small screens */
+        html, body { max-width: 100%; overflow-x: clip; }
+        /* Rich text from the admin editor (Quill): readable on every screen size.
+           Plain CSS on purpose so it also works with the Tailwind CDN fallback. */
+        .prose { overflow-wrap: anywhere; }
+        .prose p + p, .prose p + ul, .prose p + ol, .prose ul + p, .prose ol + p { margin-top: 1em; }
+        .prose ul { list-style: disc; padding-left: 1.4em; margin: .75em 0; }
+        .prose ol { list-style: decimal; padding-left: 1.4em; margin: .75em 0; }
+        .prose li + li { margin-top: .25em; }
+        .prose h1, .prose h2, .prose h3 { font-weight: 600; margin: 1.25em 0 .5em; line-height: 1.3; }
+        .prose a { text-decoration: underline; }
+        .prose img, .prose video, .prose iframe { max-width: 100%; height: auto; border-radius: .5rem; }
+        .prose .ql-align-center { text-align: center; } .prose .ql-align-right { text-align: right; }
+    </style>
 
     {{-- Favicon --}}
     <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
@@ -88,7 +103,7 @@
 <body class="bg-ivory-100 text-ivory-900 min-h-screen flex flex-col font-sans antialiased">
 
     <header class="sticky top-0 z-50 bg-ivory-50/95 backdrop-blur-sm border-b border-ivory-200" role="banner" x-data="{ mobileOpen: false }" @keydown.escape.window="mobileOpen = false">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-7xl 2xl:max-w-[96rem] mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16 sm:h-20 gap-3">
                 <a href="{{ route('properties.index') }}" class="flex items-center gap-2 sm:gap-3 min-w-0" aria-label="{{ __('layout.home_aria') }}">
                     <img src="{{ asset('images/logo.png') }}" alt="Kaymakci Real Estate Logo" class="h-10 sm:h-14 w-auto flex-shrink-0">
@@ -148,13 +163,13 @@
             {{-- Mobile navigation panel --}}
             <div x-show="mobileOpen" x-cloak x-transition class="md:hidden border-t border-ivory-200 py-3">
                 <nav class="flex flex-col text-sm font-medium text-ivory-700" role="navigation" aria-label="{{ __('layout.main_nav_aria') }}">
-                    <a href="{{ route('properties.index') }}" class="py-2.5 hover:text-gold-600 transition-colors">{{ __('layout.nav_properties') }}</a>
-                    <a href="{{ route('pages.about') }}" class="py-2.5 hover:text-gold-600 transition-colors">{{ __('layout.nav_about') }}</a>
-                    <a href="{{ route('pages.contact') }}" class="py-2.5 hover:text-gold-600 transition-colors">{{ __('layout.nav_contact') }}</a>
+                    <a href="{{ route('properties.index') }}" class="py-3 hover:text-gold-600 transition-colors">{{ __('layout.nav_properties') }}</a>
+                    <a href="{{ route('pages.about') }}" class="py-3 hover:text-gold-600 transition-colors">{{ __('layout.nav_about') }}</a>
+                    <a href="{{ route('pages.contact') }}" class="py-3 hover:text-gold-600 transition-colors">{{ __('layout.nav_contact') }}</a>
                 </nav>
                 <div class="mt-2 pt-3 border-t border-ivory-200">
                     <span class="block text-xs font-semibold text-ivory-400 uppercase tracking-wide mb-2">Sprache / Language</span>
-                    <div class="grid grid-cols-2 gap-2" role="navigation" aria-label="Sprachauswahl / Language selection">
+                    <div class="grid grid-cols-2 min-[480px]:grid-cols-3 gap-2" role="navigation" aria-label="Sprachauswahl / Language selection">
                         @foreach($siteLocales as $code => $info)
                             <a href="{{ route('locale.switch', $code) }}"
                                class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors {{ $currentLocale === $code ? 'bg-gold-50 text-gold-700 font-semibold' : 'text-ivory-700 hover:bg-ivory-100' }}"
@@ -181,7 +196,7 @@
         <div class="pointer-events-none absolute -top-24 right-[-4rem] w-80 h-80 rounded-full bg-gold-500/10 blur-3xl"></div>
         <div class="pointer-events-none absolute -bottom-32 -left-16 w-96 h-96 rounded-full bg-navy-500/20 blur-3xl"></div>
 
-        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
+        <div class="relative max-w-7xl 2xl:max-w-[96rem] mx-auto px-4 sm:px-6 lg:px-8 py-14">
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1.3fr_1fr_1.2fr] gap-10 lg:gap-12">
 
                 {{-- Brand column --}}
@@ -247,7 +262,7 @@
                             <svg class="w-4 h-4 text-gold-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                             </svg>
-                            <a href="mailto:ali@kaymakci-real-estate.de" class="hover:text-gold-400 transition-colors">ali@kaymakci-real-estate.de</a>
+                            <a href="mailto:ali@kaymakci-real-estate.de" class="hover:text-gold-400 transition-colors break-all">ali@kaymakci-real-estate.de</a>
                         </li>
                     </ul>
                 </div>
@@ -255,7 +270,7 @@
 
             {{-- Bottom bar --}}
             <div class="mt-12 pt-6 border-t border-ivory-50/10 flex flex-col-reverse sm:flex-row items-center justify-between gap-3 text-xs text-ivory-500">
-                <p>&copy; {{ date('Y') }} Kaymakci Real Estate GmbH. {{ __('layout.footer_rights') }}</p>
+                <p class="text-center sm:text-left">&copy; {{ date('Y') }} Kaymakci Real Estate GmbH. {{ __('layout.footer_rights') }}</p>
                 <p class="text-ivory-600">Frankfurt am Main, Deutschland</p>
             </div>
         </div>

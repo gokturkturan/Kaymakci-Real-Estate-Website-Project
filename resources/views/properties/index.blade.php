@@ -71,20 +71,43 @@ $breadcrumb = [
         $thousandSep = in_array(app()->getLocale(), ['de', 'pl', 'sk', 'ro'], true) ? '.' : ',';
     @endphp
     {{-- Hero --}}
-    <section class="relative overflow-hidden bg-gradient-to-br from-navy-950 via-navy-900 to-navy-800 text-ivory-50 py-20 sm:py-28" aria-labelledby="hero-title">
+    <section class="relative overflow-hidden bg-gradient-to-br from-navy-950 via-navy-900 to-navy-800 text-ivory-50 py-16 sm:py-24 lg:py-28" aria-labelledby="hero-title">
         <div class="pointer-events-none absolute -top-32 right-[-6rem] w-[32rem] h-[32rem] rounded-full bg-gold-500/10 blur-3xl"></div>
         <div class="pointer-events-none absolute -bottom-40 -left-24 w-[26rem] h-[26rem] rounded-full bg-navy-500/20 blur-3xl"></div>
-        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div class="relative max-w-7xl 2xl:max-w-[96rem] mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <span class="inline-block w-10 h-px bg-gold-400 mb-5"></span>
-            <h1 id="hero-title" class="font-serif text-3xl sm:text-5xl font-semibold mb-4 tracking-tight">{{ __('home.hero_title') }}</h1>
-            <p class="text-lg sm:text-xl text-ivory-300">{{ __('home.hero_subtitle') }}</p>
+            <h1 id="hero-title" class="font-serif text-3xl sm:text-5xl 2xl:text-6xl font-semibold mb-4 tracking-tight text-balance max-w-4xl mx-auto">{{ __('home.hero_title') }}</h1>
+            <p class="text-base sm:text-xl text-ivory-300 max-w-2xl mx-auto">{{ __('home.hero_subtitle') }}</p>
         </div>
     </section>
 
     {{-- Filter --}}
-    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 relative z-10">
-        <form method="GET" action="{{ route('properties.index') }}" class="bg-ivory-50 rounded-2xl shadow-lift border border-ivory-200 p-4 sm:p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            @php $selectedLocations = (array) request('location', []); @endphp
+    <section class="max-w-7xl 2xl:max-w-[96rem] mx-auto px-4 sm:px-6 lg:px-8 -mt-8 relative z-10">
+        @php
+            $selectedLocations = (array) request('location', []);
+            $hasActiveFilters = request()->anyFilled(['location', 'price_min', 'price_max', 'bedrooms', 'bathrooms', 'area_min', 'area_max', 'parking']);
+        @endphp
+        <form method="GET" action="{{ route('properties.index') }}" class="bg-ivory-50 rounded-2xl shadow-lift border border-ivory-200 p-4 sm:p-6"
+              x-data="{ filtersOpen: {{ $hasActiveFilters ? 'true' : 'false' }} }">
+            {{-- Phones: the filter fields are folded away behind this toggle so the listings are visible right away --}}
+            <button type="button" @click="filtersOpen = !filtersOpen" :aria-expanded="filtersOpen" aria-controls="property-filter-fields"
+                    class="sm:hidden w-full flex items-center justify-between gap-3 text-left font-medium text-ivory-800">
+                <span class="flex items-center gap-2">
+                    <svg class="w-5 h-5 text-gold-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
+                    </svg>
+                    {{ __('home.filter_toggle') }}
+                    @if($hasActiveFilters)
+                        <span class="w-2 h-2 rounded-full bg-gold-500" aria-hidden="true"></span>
+                    @endif
+                </span>
+                <svg class="w-5 h-5 text-ivory-400 transition-transform" :class="filtersOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+            </button>
+
+            <div id="property-filter-fields" class="{{ $hasActiveFilters ? 'grid mt-4 sm:mt-0' : 'hidden sm:grid' }} grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+                 :class="filtersOpen ? '!grid mt-4 sm:mt-0' : '!hidden sm:!grid'">
             <div class="relative" x-data="{ open: false, selected: {{ Illuminate\Support\Js::from(array_values($selectedLocations)) }} }" @click.outside="open = false">
                 <label class="block text-sm font-medium text-ivory-700 mb-1">{{ __('home.filter_location_label') }}</label>
                 <button type="button" @click="open = !open"
@@ -157,27 +180,28 @@ $breadcrumb = [
                 </label>
             </div>
 
-            <div class="lg:col-span-2 flex items-end justify-end gap-3">
-                <button type="submit" class="px-6 py-2.5 bg-gold-600 text-ivory-50 rounded-lg hover:bg-gold-700 transition-colors font-medium shadow-soft">
+            <div class="sm:col-span-2 lg:col-span-2 flex flex-col-reverse sm:flex-row sm:items-end sm:justify-end gap-3">
+                <button type="submit" class="w-full sm:w-auto px-6 py-2.5 bg-gold-600 text-ivory-50 rounded-lg hover:bg-gold-700 transition-colors font-medium shadow-soft">
                     {{ __('home.filter_submit') }}
                 </button>
-                @if(request()->anyFilled(['location', 'price_min', 'price_max', 'bedrooms', 'bathrooms', 'area_min', 'area_max', 'parking']))
-                    <a href="{{ route('properties.index') }}" class="px-6 py-2.5 border border-ivory-300 rounded-lg text-ivory-700 hover:bg-ivory-100 transition-colors">
+                @if($hasActiveFilters)
+                    <a href="{{ route('properties.index') }}" class="w-full sm:w-auto text-center px-6 py-2.5 border border-ivory-300 rounded-lg text-ivory-700 hover:bg-ivory-100 transition-colors">
                         {{ __('home.filter_reset') }}
                     </a>
                 @endif
+            </div>
             </div>
         </form>
     </section>
 
     {{-- Angebotsliste --}}
-    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16" aria-labelledby="listings-title">
-        <h2 id="listings-title" class="font-serif text-2xl sm:text-3xl font-semibold text-navy-900 mb-8">{{ __('home.listings_heading', ['count' => $properties->total()]) }}</h2>
+    <section class="max-w-7xl 2xl:max-w-[96rem] mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16" aria-labelledby="listings-title">
+        <h2 id="listings-title" class="font-serif text-2xl sm:text-3xl font-semibold text-navy-900 mb-6 sm:mb-8">{{ __('home.listings_heading', ['count' => $properties->total()]) }}</h2>
 
         @if($properties->isEmpty())
             <p class="text-ivory-500 text-center py-12">{{ __('home.listings_empty') }}</p>
         @else
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6 lg:gap-8">
                 @foreach($properties as $property)
                     <article class="group bg-ivory-50 rounded-2xl shadow-soft border border-ivory-200 overflow-hidden hover:shadow-lift hover:-translate-y-1 transition-all duration-300" itemscope itemtype="https://schema.org/RealEstateListing">
                         <a href="{{ route('properties.show', $property) }}" class="block" itemprop="url">
@@ -210,7 +234,7 @@ $breadcrumb = [
                                     <span itemprop="priceCurrency" content="EUR">€</span>
                                     <span class="text-sm font-medium text-ivory-500">{{ __('home.card_per_person_night') }}</span>
                                 </p>
-                                <div class="flex gap-4 mt-3 text-sm text-ivory-500">
+                                <div class="flex flex-wrap gap-x-4 gap-y-1 mt-3 text-sm text-ivory-500">
                                     <span><strong class="text-ivory-700">{{ $property->bedrooms }}</strong> {{ __('home.card_rooms') }}</span>
                                     <span><strong class="text-ivory-700">{{ $property->bathrooms }}</strong> {{ __('home.card_bath') }}</span>
                                     <span><strong class="text-ivory-700">{{ $property->area }}</strong> m²</span>
@@ -227,13 +251,13 @@ $breadcrumb = [
                     <div class="flex flex-wrap justify-center items-center gap-2">
                         {{-- Previous --}}
                         @if($properties->onFirstPage())
-                            <span class="px-4 py-2 text-ivory-400 bg-ivory-100 rounded-lg cursor-not-allowed">
+                            <span class="min-w-[2.75rem] h-11 inline-flex items-center justify-center px-3 sm:px-4 text-ivory-400 bg-ivory-100 rounded-lg cursor-not-allowed">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
                                 </svg>
                             </span>
                         @else
-                            <a href="{{ $properties->previousPageUrl() }}" class="px-4 py-2 text-ivory-700 bg-ivory-50 border border-ivory-200 rounded-lg shadow-soft hover:bg-gold-50 transition-colors" aria-label="{{ __('home.pagination_prev') }}">
+                            <a href="{{ $properties->previousPageUrl() }}" class="min-w-[2.75rem] h-11 inline-flex items-center justify-center px-3 sm:px-4 text-ivory-700 bg-ivory-50 border border-ivory-200 rounded-lg shadow-soft hover:bg-gold-50 transition-colors" aria-label="{{ __('home.pagination_prev') }}">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
                                 </svg>
@@ -243,21 +267,21 @@ $breadcrumb = [
                         {{-- Page Numbers --}}
                         @foreach($properties->getUrlRange(1, $properties->lastPage()) as $page => $url)
                             @if($page == $properties->currentPage())
-                                <span class="px-4 py-2 text-ivory-50 bg-gold-600 rounded-lg font-medium" aria-current="page">{{ $page }}</span>
+                                <span class="min-w-[2.75rem] h-11 inline-flex items-center justify-center px-3 sm:px-4 text-ivory-50 bg-gold-600 rounded-lg font-medium" aria-current="page">{{ $page }}</span>
                             @else
-                                <a href="{{ $url }}" class="px-4 py-2 text-ivory-700 bg-ivory-50 border border-ivory-200 rounded-lg shadow-soft hover:bg-gold-50 transition-colors">{{ $page }}</a>
+                                <a href="{{ $url }}" class="min-w-[2.75rem] h-11 inline-flex items-center justify-center px-3 sm:px-4 text-ivory-700 bg-ivory-50 border border-ivory-200 rounded-lg shadow-soft hover:bg-gold-50 transition-colors">{{ $page }}</a>
                             @endif
                         @endforeach
 
                         {{-- Next --}}
                         @if($properties->hasMorePages())
-                            <a href="{{ $properties->nextPageUrl() }}" class="px-4 py-2 text-ivory-700 bg-ivory-50 border border-ivory-200 rounded-lg shadow-soft hover:bg-gold-50 transition-colors" aria-label="{{ __('home.pagination_next') }}">
+                            <a href="{{ $properties->nextPageUrl() }}" class="min-w-[2.75rem] h-11 inline-flex items-center justify-center px-3 sm:px-4 text-ivory-700 bg-ivory-50 border border-ivory-200 rounded-lg shadow-soft hover:bg-gold-50 transition-colors" aria-label="{{ __('home.pagination_next') }}">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                                 </svg>
                             </a>
                         @else
-                            <span class="px-4 py-2 text-ivory-400 bg-ivory-100 rounded-lg cursor-not-allowed">
+                            <span class="min-w-[2.75rem] h-11 inline-flex items-center justify-center px-3 sm:px-4 text-ivory-400 bg-ivory-100 rounded-lg cursor-not-allowed">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                                 </svg>
@@ -275,9 +299,9 @@ $breadcrumb = [
 
     {{-- SEO Text Section --}}
     <section class="py-12 sm:py-16" aria-labelledby="seo-title">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-7xl 2xl:max-w-[96rem] mx-auto px-4 sm:px-6 lg:px-8">
             <h2 id="seo-title" class="font-serif text-2xl font-semibold text-navy-900 mb-4">{{ __('home.seo_heading') }}</h2>
-            <div class="prose prose-neutral max-w-none">
+            <div class="prose prose-neutral max-w-4xl">
                 <p class="text-ivory-700 leading-relaxed">
                     {!! __('home.seo_paragraph_1') !!}
                 </p>

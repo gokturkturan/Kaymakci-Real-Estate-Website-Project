@@ -44,7 +44,7 @@ class PropertyController extends Controller
             $query->where('has_parking', true);
         }
 
-        $properties = $query->latest()->paginate(6)->withQueryString();
+        $properties = $query->latest()->paginate(12)->withQueryString();
 
         $locations = Property::select('location')->distinct()->orderBy('location')->pluck('location');
 

@@ -4,7 +4,7 @@
 @section('header', 'Neue Immobilie hinzufügen')
 
 @section('content')
-    <div class="max-w-4xl">
+    <div class="max-w-4xl mx-auto">
         <div class="bg-ivory-50 rounded-2xl shadow-soft border border-ivory-200 p-4 sm:p-6">
             @if($errors->any())
                 <div class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg mb-6">
@@ -119,7 +119,7 @@
                             <div id="media-type-order"></div>
                         </div>
                         <p class="text-sm text-ivory-500 mt-3">Ziehen Sie die Medien in die gewünschte Reihenfolge. Das erste Bild wird als Titelbild verwendet.</p>
-                        <div id="media-preview" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4"></div>
+                        <div id="media-preview" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 mt-4"></div>
                     </div>
                 </div>
 
@@ -247,7 +247,7 @@
                 badge.textContent = item.type === 'video' ? 'Video' : (index === firstImageIndex ? 'Titelbild' : 'Bild');
 
                 const controls = document.createElement('div');
-                controls.className = 'flex gap-2 mt-2';
+                controls.className = 'grid grid-cols-2 gap-2 mt-2';
 
                 const moveLeft = document.createElement('button');
                 moveLeft.type = 'button';
@@ -267,7 +267,7 @@
 
                 const removeButton = document.createElement('button');
                 removeButton.type = 'button';
-                removeButton.className = 'px-2 py-1 text-sm text-red-600 border border-red-200 rounded hover:bg-red-50';
+                removeButton.className = 'col-span-2 px-2 py-1 text-sm text-red-600 border border-red-200 rounded hover:bg-red-50';
                 removeButton.textContent = 'Löschen';
                 removeButton.title = 'Aus Auswahl entfernen';
                 removeButton.addEventListener('click', () => removeSelectedMedia(index));

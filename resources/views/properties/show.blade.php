@@ -107,19 +107,21 @@
 @endsection
 
 @section('content')
-    <article class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10" itemscope itemtype="https://schema.org/RealEstateListing">
+    <article class="max-w-7xl 2xl:max-w-[96rem] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10" itemscope itemtype="https://schema.org/RealEstateListing">
 
         <nav class="mb-6" aria-label="Breadcrumb">
-            <ol class="flex items-center gap-2 text-sm text-ivory-500">
+            <ol class="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-ivory-500 min-w-0">
                 <li><a href="{{ route('properties.index') }}" class="hover:text-gold-700 transition-colors">{{ __('property.breadcrumb_home') }}</a></li>
                 <li><span aria-hidden="true">/</span></li>
                 <li><a href="{{ route('properties.index') }}" class="hover:text-gold-700 transition-colors">{{ __('property.breadcrumb_listings') }}</a></li>
                 <li><span aria-hidden="true">/</span></li>
-                <li class="text-ivory-900 font-medium" aria-current="page">{{ Str::limit($property->localized_title, 30) }}</li>
+                <li class="text-ivory-900 font-medium truncate max-w-full" aria-current="page">{{ Str::limit($property->localized_title, 30) }}</li>
             </ol>
         </nav>
 
-        <div class="bg-ivory-50 rounded-2xl shadow-soft border border-ivory-200 overflow-hidden">
+        {{-- Two columns on large screens: details on the left, booking form in a sidebar on the right --}}
+        <div class="lg:grid lg:grid-cols-[minmax(0,1fr)_22rem] xl:grid-cols-[minmax(0,1fr)_25rem] 2xl:grid-cols-[minmax(0,1fr)_28rem] lg:gap-8 lg:items-start">
+        <div class="bg-ivory-50 rounded-2xl shadow-soft border border-ivory-200 overflow-hidden min-w-0">
             {{-- Media Gallery (images + videos combined, in admin-defined order) --}}
             @php
                 $media = $property->media;
@@ -148,23 +150,23 @@
 
                         {{-- Navigation Arrows --}}
                         @if($media->count() > 1)
-                            <button @click="currentSlide = (currentSlide - 1 + totalSlides) % totalSlides"
-                                    class="absolute left-4 top-1/2 -translate-y-1/2 bg-navy-950/50 hover:bg-navy-950/70 text-white p-3 rounded-full transition"
+                            <button type="button" @click="currentSlide = (currentSlide - 1 + totalSlides) % totalSlides"
+                                    class="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 bg-navy-950/50 hover:bg-navy-950/70 text-white p-2 sm:p-3 rounded-full transition"
                                     aria-label="{{ __('property.gallery_prev_aria') }}">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
                                 </svg>
                             </button>
-                            <button @click="currentSlide = (currentSlide + 1) % totalSlides"
-                                    class="absolute right-4 top-1/2 -translate-y-1/2 bg-navy-950/50 hover:bg-navy-950/70 text-white p-3 rounded-full transition"
+                            <button type="button" @click="currentSlide = (currentSlide + 1) % totalSlides"
+                                    class="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 bg-navy-950/50 hover:bg-navy-950/70 text-white p-2 sm:p-3 rounded-full transition"
                                     aria-label="{{ __('property.gallery_next_aria') }}">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                                 </svg>
                             </button>
 
                             {{-- Counter --}}
-                            <div class="absolute bottom-4 right-4 bg-navy-950/70 text-white text-sm px-3 py-1 rounded-full">
+                            <div class="absolute bottom-2 right-2 sm:bottom-4 sm:right-4 bg-navy-950/70 text-white text-xs sm:text-sm px-2.5 sm:px-3 py-1 rounded-full">
                                 <span x-text="currentSlide + 1"></span> / {{ $media->count() }}
                             </div>
                         @endif
@@ -172,10 +174,11 @@
 
                     {{-- Thumbnail Navigation --}}
                     @if($media->count() > 1)
-                        <div class="flex gap-2 p-4 bg-ivory-100 overflow-x-auto">
+                        <div class="flex gap-2 p-3 sm:p-4 bg-ivory-100 overflow-x-auto overscroll-x-contain">
                             @foreach($media as $index => $item)
-                                <button @click="currentSlide = {{ $index }}"
-                                        class="relative flex-shrink-0 w-20 h-14 rounded overflow-hidden border-2 transition"
+                                <button type="button" @click="currentSlide = {{ $index }}"
+                                        aria-label="{{ __('property.gallery_thumbnail_alt', ['index' => $index + 1]) }}"
+                                        class="relative flex-shrink-0 w-16 h-12 sm:w-20 sm:h-14 rounded overflow-hidden border-2 transition"
                                         :class="currentSlide === {{ $index }} ? 'border-gold-600' : 'border-transparent hover:border-ivory-300'">
                                     @if($item['type'] === 'image')
                                         <img src="{{ $item['url'] }}" alt="{{ __('property.gallery_thumbnail_alt', ['index' => $index + 1]) }}" class="w-full h-full object-cover">
@@ -215,13 +218,13 @@
 
             <div class="p-5 sm:p-8">
                 <header class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-6">
-                    <div>
-                        <h1 class="font-serif text-2xl sm:text-4xl font-semibold text-ivory-900" itemprop="name">{{ $property->localized_title }}</h1>
+                    <div class="min-w-0">
+                        <h1 class="font-serif text-2xl sm:text-3xl xl:text-4xl font-semibold text-ivory-900 break-words" itemprop="name">{{ $property->localized_title }}</h1>
                         <p class="text-ivory-500 mt-1" itemprop="address" itemscope itemtype="https://schema.org/PostalAddress">
                             <span itemprop="addressLocality">{{ $property->location }}</span>
                         </p>
                     </div>
-                    <p class="font-serif text-3xl font-bold text-gold-700 whitespace-nowrap" itemprop="offers" itemscope itemtype="https://schema.org/Offer">
+                    <p class="font-serif text-2xl sm:text-3xl font-bold text-gold-700 whitespace-nowrap sm:text-right" itemprop="offers" itemscope itemtype="https://schema.org/Offer">
                         <span itemprop="price" content="{{ $property->price }}">{{ $priceFormatted }}</span>
                         <span itemprop="priceCurrency" content="EUR">€</span>
                         <span class="block text-sm font-medium text-ivory-500">{{ __('property.price_suffix_per_person_night') }}</span>
@@ -229,7 +232,7 @@
                     </p>
                 </header>
 
-                <section class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 p-4 sm:p-6 bg-ivory-100 rounded-xl mb-8" aria-label="{{ __('property.stats_aria_label') }}">
+                <section class="grid grid-cols-[repeat(auto-fit,minmax(5.5rem,1fr))] gap-x-3 gap-y-5 p-4 sm:p-6 bg-ivory-100 rounded-xl mb-8" aria-label="{{ __('property.stats_aria_label') }}">
                     <div class="text-center">
                         <p class="font-serif text-2xl font-bold text-ivory-900" itemprop="numberOfRooms">{{ $property->bedrooms }}</p>
                         <p class="text-sm text-ivory-500">{{ __('property.stats_rooms') }}</p>
@@ -270,13 +273,20 @@
                     <section class="mt-8" aria-labelledby="map-title">
                         <h2 id="map-title" class="font-serif text-xl sm:text-2xl font-semibold text-ivory-900 mb-3">{{ __('property.map_heading') }}</h2>
                         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-                        <div id="property-map" class="h-96 rounded-xl border border-ivory-200" aria-label="{{ __('property.map_aria_label', ['location' => $property->location]) }}"></div>
+                        <div id="property-map" class="h-64 sm:h-80 lg:h-96 rounded-xl border border-ivory-200 relative z-0" aria-label="{{ __('property.map_aria_label', ['location' => $property->location]) }}"></div>
                         <p class="text-xs text-ivory-500 mt-2">{{ __('property.map_attribution') }}</p>
                         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
                         <script>
                             document.addEventListener('DOMContentLoaded', function () {
                                 const coordinates = [{{ (float) $property->latitude }}, {{ (float) $property->longitude }}];
-                                const map = L.map('property-map').setView(coordinates, 18);
+                                const map = L.map('property-map', {
+                                    // Don't hijack page scrolling: no wheel-zoom, and on touch devices one finger scrolls the page (pinch still zooms).
+                                    scrollWheelZoom: false,
+                                    dragging: !L.Browser.mobile,
+                                    tap: !L.Browser.mobile,
+                                }).setView(coordinates, 18);
+                                map.on('focus', function () { map.scrollWheelZoom.enable(); });
+                                map.on('blur', function () { map.scrollWheelZoom.disable(); });
                                 const satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
                                     attribution: 'Tiles &copy; Esri — Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community'
                                 });
@@ -294,6 +304,11 @@
                     </section>
                 @endif
 
+            </div>
+        </div>
+
+        {{-- Booking sidebar (below the details on phones/tablets, right column on large screens) --}}
+        <aside class="mt-8 lg:mt-0 min-w-0">
                 {{-- Booking Section --}}
                 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
                 <style>
@@ -456,7 +471,7 @@
                     }
                 }
                 </script>
-                <section class="mt-8 p-5 sm:p-8 bg-gold-50 rounded-2xl" aria-label="{{ __('property.booking_heading') }}" x-data="bookingForm()">
+                <section class="p-5 sm:p-8 bg-gold-50 rounded-2xl border border-gold-100 shadow-soft" aria-label="{{ __('property.booking_heading') }}" x-data="bookingForm()">
                     <h3 class="font-serif text-lg sm:text-xl font-semibold text-ivory-900 mb-2">{{ __('property.booking_heading') }}</h3>
                     <p class="text-ivory-700 mb-4">{{ __('property.booking_subheading') }}</p>
 
@@ -475,7 +490,7 @@
                     <form action="{{ route('bookings.store', $property) }}" method="POST" class="space-y-4">
                         @csrf
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-4">
                             {{-- Check-in Date --}}
                             <div>
                                 <label for="check_in" class="block text-sm font-medium text-ivory-700 mb-1">{{ __('property.booking_checkin_label') }}</label>
@@ -511,7 +526,7 @@
                             <p class="text-sm">{{ __('property.booking_price_per_person_night', ['price' => $priceFormatted . ' €']) }}</p>
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
                             {{-- Name --}}
                             <div>
                                 <label for="name" class="block text-sm font-medium text-ivory-700 mb-1">{{ __('property.booking_name_label') }}</label>
@@ -535,7 +550,7 @@
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
                             {{-- Phone --}}
                             <div>
                                 <label for="phone" class="block text-sm font-medium text-ivory-700 mb-1">{{ __('property.booking_phone_label') }}</label>
@@ -584,7 +599,7 @@
                         {{ __('property.booking_disclaimer') }}
                     </p>
                 </section>
-            </div>
+        </aside>
         </div>
 
         <meta itemprop="datePosted" content="{{ $property->created_at->toIso8601String() }}">

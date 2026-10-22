@@ -27,11 +27,11 @@ class CalendarController extends Controller
 
         $bookings = Booking::where('status', 'approved')
             ->whereDate('check_in', '<=', $monthEnd)
-            ->whereDate('check_out', '>=', $monthStart)
+            ->whereDate('check_out', '>', $monthStart) // check-out / end date is the day after the last night
             ->get();
 
         $blocks = PropertyBlock::whereDate('start_date', '<=', $monthEnd)
-            ->whereDate('end_date', '>=', $monthStart)
+            ->whereDate('end_date', '>', $monthStart)
             ->get();
 
         $rows = $properties->map(function (Property $property) use ($bookings, $blocks, $monthStart, $monthEnd, $daysInMonth) {
@@ -140,7 +140,9 @@ class CalendarController extends Controller
 
     private function buildSegment(Carbon $start, Carbon $end, Carbon $monthStart, Carbon $monthEnd, int $daysInMonth, array $meta): array
     {
-        $monthBoundaryEnd = $monthEnd->copy()->addDay();
+        // Midnight of the 1st of the next month. $monthEnd is endOfMonth() (23:59:59), so adding a day to it
+        // directly would land on the 1st at 23:59:59 and stretch segments almost a full day past the grid.
+        $monthBoundaryEnd = $monthEnd->copy()->startOfDay()->addDay();
 
         $clippedStart = $start->lt($monthStart) ? $monthStart->copy() : $start->copy();
         $clippedEnd = $end->gt($monthBoundaryEnd) ? $monthBoundaryEnd : $end->copy();
@@ -148,9 +150,13 @@ class CalendarController extends Controller
         $startOffset = $monthStart->diffInDays($clippedStart);
         $length = max($clippedStart->diffInDays($clippedEnd), 1);
 
+        // Never let a bar reach past the last day of the month (it would widen the scroll area).
+        $left = min(max($startOffset / $daysInMonth * 100, 0), 100);
+        $width = min($length / $daysInMonth * 100, 100 - $left);
+
         return array_merge($meta, [
-            'left' => round($startOffset / $daysInMonth * 100, 4),
-            'width' => round($length / $daysInMonth * 100, 4),
+            'left' => round($left, 4),
+            'width' => round($width, 4),
             'start' => $start->format('d.m.Y'),
             'end' => $end->format('d.m.Y'),
             'continues_before' => $start->lt($monthStart),

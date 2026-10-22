@@ -4,8 +4,8 @@
 @section('header', 'Belegungskalender')
 
 @section('content')
-    {{-- Month navigation --}}
-    <div class="bg-ivory-50 rounded-2xl shadow-soft border border-ivory-200 p-4 mb-6 flex flex-wrap items-center justify-between gap-4">
+    {{-- Month navigation: sticky, so it stays reachable while scrolling through a long property list --}}
+    <div class="sticky top-0 z-30 bg-ivory-50 rounded-2xl shadow-soft border border-ivory-200 p-3 sm:p-4 mb-6 flex flex-wrap items-center justify-between gap-3 sm:gap-4">
         <div class="flex items-center gap-2">
             <a href="{{ route('admin.calendar.index', ['month' => $prevMonth]) }}"
                class="p-2 rounded-lg border border-ivory-200 text-ivory-600 hover:bg-ivory-100 transition-colors" aria-label="Vorheriger Monat">
@@ -13,7 +13,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
                 </svg>
             </a>
-            <h2 class="font-serif text-lg sm:text-xl font-semibold text-navy-900 w-44 text-center">{{ $monthLabel }}</h2>
+            <h2 class="font-serif text-lg sm:text-xl font-semibold text-navy-900 w-36 sm:w-44 text-center">{{ $monthLabel }}</h2>
             <a href="{{ route('admin.calendar.index', ['month' => $nextMonth]) }}"
                class="p-2 rounded-lg border border-ivory-200 text-ivory-600 hover:bg-ivory-100 transition-colors" aria-label="Nächster Monat">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -22,11 +22,11 @@
             </a>
         </div>
 
-        <div class="flex items-center gap-5">
+        <div class="flex flex-wrap items-center gap-3 sm:gap-5">
             {{-- Legend --}}
-            <div class="flex items-center gap-4 text-sm text-ivory-600">
-                <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-gold-500"></span>Website-Buchung</span>
-                <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-navy-700"></span>Manuell gesperrt</span>
+            <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs sm:text-sm text-ivory-600">
+                <span class="flex items-center gap-1.5 whitespace-nowrap"><span class="w-3 h-3 rounded-sm bg-gold-500"></span>Website-Buchung</span>
+                <span class="flex items-center gap-1.5 whitespace-nowrap"><span class="w-3 h-3 rounded-sm bg-navy-700"></span>Manuell gesperrt</span>
             </div>
             @if(!$monthStart->isSameMonth(now()))
                 <a href="{{ route('admin.calendar.index') }}"
@@ -46,7 +46,7 @@
     </div>
 
     {{-- Hinweis, wenn eine per Klick begonnene Auswahl über den Monatswechsel hinweg läuft --}}
-    <div id="pending-selection-banner" class="hidden bg-gold-50 border border-gold-200 text-gold-900 rounded-xl px-4 py-3 mb-6 flex items-center justify-between gap-4 text-sm">
+    <div id="pending-selection-banner" class="hidden bg-gold-50 border border-gold-200 text-gold-900 rounded-xl px-4 py-3 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 text-sm">
         <span id="pending-selection-text"></span>
         <button type="button" id="pending-selection-cancel" class="text-gold-800 hover:text-gold-900 font-medium underline whitespace-nowrap flex-shrink-0">Abbrechen</button>
     </div>
@@ -68,7 +68,7 @@
             @csrf
             <input type="hidden" name="month" value="{{ $monthValue }}">
 
-            <div class="lg:w-56">
+            <div class="sm:col-span-2 lg:w-56">
                 <label for="property_id" class="block text-sm font-medium text-ivory-700 mb-1">Immobilie</label>
                 <select name="property_id" id="property_id" required
                         class="w-full px-3 py-2 border border-ivory-300 rounded-lg bg-white focus:ring-2 focus:ring-gold-400 outline-none">
@@ -93,14 +93,14 @@
                        class="w-full lg:w-auto px-3 py-2 border border-ivory-300 rounded-lg bg-white focus:ring-2 focus:ring-gold-400 outline-none disabled:bg-ivory-100 disabled:text-ivory-400 disabled:cursor-not-allowed">
             </div>
 
-            <div class="lg:w-56">
+            <div class="sm:col-span-2 lg:w-56">
                 <label for="label" class="block text-sm font-medium text-ivory-700 mb-1">Notiz (optional)</label>
                 <input type="text" name="label" id="label" maxlength="255" value="{{ old('label') }}" placeholder="z.B. Airbnb – Herr Novak"
                        class="w-full px-3 py-2 border border-ivory-300 rounded-lg bg-white focus:ring-2 focus:ring-gold-400 outline-none">
             </div>
 
-            <div>
-                <button type="submit" class="px-5 py-2 bg-navy-800 text-ivory-50 rounded-lg hover:bg-navy-900 transition-colors font-medium whitespace-nowrap">
+            <div class="sm:col-span-2 lg:col-span-1">
+                <button type="submit" class="w-full sm:w-auto px-5 py-2 bg-navy-800 text-ivory-50 rounded-lg hover:bg-navy-900 transition-colors font-medium whitespace-nowrap">
                     Zeitraum sperren
                 </button>
             </div>
@@ -114,11 +114,14 @@
                 <p class="text-ivory-500">Noch keine Immobilien vorhanden.</p>
             </div>
         @else
-            <div class="overflow-x-auto">
-                <div class="min-w-[900px]">
+            {{-- Day columns stretch to fill the card (no forced min-width, so wide screens never scroll
+                 needlessly); each column keeps a small min-width of its own so it stays readable/tappable,
+                 and horizontal scroll only kicks in on narrow screens once that's actually needed. --}}
+            <div class="overflow-x-auto overscroll-x-contain">
+                <div class="w-max min-w-full">
                     {{-- Day header --}}
                     <div class="flex border-b border-ivory-200 bg-ivory-100">
-                        <div class="w-48 flex-shrink-0 px-3 py-2 text-xs font-semibold text-ivory-500 uppercase flex items-center">Immobilie</div>
+                        <div class="sticky left-0 z-20 w-28 sm:w-40 lg:w-48 flex-shrink-0 px-3 py-2 text-xs font-semibold text-ivory-500 uppercase flex items-center bg-ivory-100 border-r border-ivory-200">Immobilie</div>
                         <div class="flex-1 flex">
                             @for($d = 1; $d <= $daysInMonth; $d++)
                                 @php
@@ -127,7 +130,7 @@
                                     $isToday = $todayDay === $d;
                                     $weekdayAbbr = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'][$dayDate->isoWeekday() - 1];
                                 @endphp
-                                <div class="flex-1 text-center text-[11px] py-1.5 leading-tight {{ $isToday ? 'bg-gold-100 text-gold-800 font-bold rounded' : ($isWeekend ? 'text-ivory-400' : 'text-ivory-500') }}">
+                                <div class="flex-1 min-w-[30px] text-center text-[11px] py-1.5 leading-tight {{ $isToday ? 'bg-gold-100 text-gold-800 font-bold rounded' : ($isWeekend ? 'text-ivory-400' : 'text-ivory-500') }}">
                                     <div>{{ $d }}</div>
                                     <div class="text-[9px] uppercase tracking-wide opacity-70">{{ $weekdayAbbr }}</div>
                                 </div>
@@ -138,7 +141,7 @@
                     {{-- Property rows --}}
                     @foreach($rows as $row)
                         <div class="flex border-b border-ivory-100 hover:bg-ivory-50/60 transition-colors">
-                            <div class="w-48 flex-shrink-0 px-3 py-2.5 min-w-0">
+                            <div class="sticky left-0 z-20 w-28 sm:w-40 lg:w-48 flex-shrink-0 px-3 py-2.5 min-w-0 bg-ivory-50 border-r border-ivory-200">
                                 <a href="{{ route('admin.properties.edit', $row['property']) }}" class="text-sm font-medium text-navy-900 hover:text-gold-700 transition-colors block truncate">
                                     {{ $row['property']->title }}
                                 </a>
@@ -154,7 +157,7 @@
                                         @endphp
                                         <button type="button"
                                                 @if($isPastCell) disabled @endif
-                                                class="day-cell flex-1 {{ $cellDate->isWeekend() ? 'bg-ivory-100/70' : '' }} {{ $todayDay === $d ? 'bg-gold-50' : '' }} border-r border-ivory-100/60 transition-colors p-0 {{ $isPastCell ? 'opacity-30 cursor-not-allowed' : 'hover:bg-gold-100/60 cursor-pointer' }}"
+                                                class="day-cell flex-1 min-w-[30px] {{ $cellDate->isWeekend() ? 'bg-ivory-100/70' : '' }} {{ $todayDay === $d ? 'bg-gold-50' : '' }} border-r border-ivory-100/60 transition-colors p-0 {{ $isPastCell ? 'opacity-30 cursor-not-allowed' : 'hover:bg-gold-100/60 cursor-pointer' }}"
                                                 data-property-id="{{ $row['property']->id }}"
                                                 data-property-title="{{ $row['property']->title }}"
                                                 data-date="{{ $cellDate->format('Y-m-d') }}"
@@ -175,6 +178,9 @@
                                              style="left: {{ $seg['left'] }}%; width: {{ $seg['width'] }}%;"
                                              title="{{ $seg['label'] }} ({{ $seg['start'] }} – {{ $seg['end'] }})">
                                             <span class="truncate flex-1">{{ $seg['label'] }}</span>
+                                            {{-- The × sits on the block's own last day: a block that runs on into the next month
+                                                 shows it there (in that month's view), not at the end of this month. --}}
+                                            @unless($seg['continues_after'])
                                             <form action="{{ route('admin.calendar.blocks.destroy', $seg['id']) }}" method="POST"
                                                   class="flex-shrink-0 leading-none" onsubmit="return confirm('Sperre wirklich entfernen?')">
                                                 @csrf
@@ -182,6 +188,7 @@
                                                 <input type="hidden" name="month" value="{{ $monthValue }}">
                                                 <button type="submit" class="text-ivory-300 hover:text-white" title="Sperre entfernen">&times;</button>
                                             </form>
+                                            @endunless
                                         </div>
                                     @endif
                                 @endforeach
@@ -216,6 +223,7 @@
             }
 
             const PENDING_KEY = 'calendarBlockSelection';
+            const PENDING_EXPIRY_MS = 30 * 60 * 1000; // forget an abandoned selection after 30 minutes
 
             function savePendingSelection(sel) {
                 try {
@@ -224,6 +232,7 @@
                             propertyId: sel.propertyId,
                             propertyTitle: sel.propertyTitle,
                             date: sel.date,
+                            startedAt: Date.now(),
                         }));
                     } else {
                         sessionStorage.removeItem(PENDING_KEY);
@@ -236,7 +245,17 @@
             function loadPendingSelection() {
                 try {
                     const raw = sessionStorage.getItem(PENDING_KEY);
-                    return raw ? JSON.parse(raw) : null;
+                    if (!raw) {
+                        return null;
+                    }
+                    const pending = JSON.parse(raw);
+                    // A selection left running (e.g. the admin navigated away without finishing or
+                    // cancelling it) should not keep reappearing as a lone highlighted cell forever.
+                    if (!pending.startedAt || Date.now() - pending.startedAt > PENDING_EXPIRY_MS) {
+                        sessionStorage.removeItem(PENDING_KEY);
+                        return null;
+                    }
+                    return pending;
                 } catch (e) {
                     return null;
                 }
@@ -344,16 +363,32 @@
                 const centerLeft = ((Math.min(startRect.left, endRect.left) + Math.max(startRect.right, endRect.right)) / 2) - rowRect.left;
 
                 const popup = document.createElement('div');
-                popup.className = 'block-popup absolute z-20 top-full mt-2 bg-white border border-ivory-300 rounded-lg shadow-lift p-3 flex items-center gap-2 whitespace-nowrap';
+                popup.className = 'block-popup absolute z-30 top-full mt-2 bg-white border border-ivory-300 rounded-lg shadow-lift p-2 sm:p-3 flex items-center gap-2 whitespace-nowrap';
                 popup.style.left = centerLeft + 'px';
                 popup.style.transform = 'translateX(-50%)';
                 popup.innerHTML =
                     '<input type="text" maxlength="255" placeholder="Notiz (optional), z.B. Airbnb" ' +
-                    'class="popup-label-input px-2 py-1.5 border border-ivory-300 rounded-md text-sm w-48 focus:ring-2 focus:ring-gold-400 outline-none">' +
+                    'class="popup-label-input px-2 py-1.5 border border-ivory-300 rounded-md text-base sm:text-sm w-36 sm:w-48 focus:ring-2 focus:ring-gold-400 outline-none">' +
                     '<button type="button" class="popup-confirm px-3 py-1.5 bg-navy-800 text-ivory-50 rounded-md text-sm font-medium hover:bg-navy-900 whitespace-nowrap">Sperren</button>' +
                     '<button type="button" class="popup-cancel px-2 py-1.5 text-ivory-500 hover:text-ivory-700 text-sm">Abbrechen</button>';
 
                 rowEl.appendChild(popup);
+
+                if (window.matchMedia('(max-width: 639px)').matches) {
+                    // Phones: the calendar scrolls sideways and is narrower than the popup, so show it
+                    // as a small bar pinned to the bottom of the screen instead of under the cells.
+                    popup.className = 'block-popup fixed inset-x-4 bottom-4 z-50 bg-white border border-ivory-300 rounded-xl shadow-lift p-3 flex items-center gap-2';
+                    popup.style.left = '';
+                    popup.style.transform = '';
+                    const narrowInput = popup.querySelector('.popup-label-input');
+                    narrowInput.classList.remove('w-36');
+                    narrowInput.classList.add('flex-1', 'min-w-0');
+                } else {
+                    // Keep the popup inside the row: clamp its centre so neither edge is cut off.
+                    const halfWidth = popup.offsetWidth / 2;
+                    const maxLeft = Math.max(halfWidth + 4, rowEl.scrollWidth - halfWidth - 4);
+                    popup.style.left = Math.min(Math.max(centerLeft, halfWidth + 4), maxLeft) + 'px';
+                }
 
                 const input = popup.querySelector('.popup-label-input');
                 input.focus();

@@ -26,6 +26,7 @@ return [
     'filter_parking_only' => 'Parking only',
     'filter_submit' => 'Filter',
     'filter_reset' => 'Reset',
+    'filter_toggle' => 'Search & filters',
     'listings_heading' => 'Current property listings (:count)',
     'listings_empty' => 'No listings available yet.',
     'card_photos_count' => ':count photos',

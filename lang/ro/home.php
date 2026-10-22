@@ -26,6 +26,7 @@ return [
     'filter_parking_only' => 'Doar cu parcare',
     'filter_submit' => 'Filtrează',
     'filter_reset' => 'Resetează',
+    'filter_toggle' => 'Căutare și filtre',
     'listings_heading' => 'Oferte actuale (:count)',
     'listings_empty' => 'Încă nu există oferte disponibile.',
     'card_photos_count' => ':count fotografii',

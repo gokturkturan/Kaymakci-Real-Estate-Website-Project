@@ -4,7 +4,7 @@
 @section('header', 'Immobilie bearbeiten')
 
 @section('content')
-    <div class="max-w-4xl">
+    <div class="max-w-4xl mx-auto">
         <div class="bg-ivory-50 rounded-2xl shadow-soft border border-ivory-200 p-4 sm:p-6">
             @if($errors->any())
                 <div class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg mb-6">
@@ -116,7 +116,7 @@
                             <label class="block text-sm font-medium text-ivory-700 mb-2">Vorhandene Medien ({{ $existingMedia->count() }})</label>
                             <p class="text-sm text-ivory-500 mb-3">Ziehen Sie Bilder und Videos in die gewünschte Reihenfolge. Das erste Bild wird als Titelbild verwendet.</p>
                             <div id="existing-media-order"></div>
-                            <div id="existing-media" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                            <div id="existing-media" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
                                 @foreach($existingMedia as $item)
                                     <div class="existing-media-card relative rounded-xl overflow-hidden shadow-soft border border-ivory-200 bg-ivory-50 p-2 cursor-move"
                                          data-media-type="{{ $item['type'] }}" data-media-id="{{ $item['id'] }}" draggable="true"
@@ -129,13 +129,13 @@
                                             @endif
                                             <span class="media-position absolute top-2 left-2 bg-gold-600 text-ivory-50 text-xs font-semibold px-2 py-1 rounded"></span>
                                         </div>
-                                        <div class="flex gap-2 mt-2">
+                                        <div class="grid grid-cols-2 gap-2 mt-2">
                                             <button type="button" onclick="moveExistingMedia(this.closest('.existing-media-card'), -1)" class="flex-1 px-2 py-1 text-sm border border-ivory-300 rounded hover:bg-white" title="Nach links verschieben">←</button>
                                             <button type="button" onclick="moveExistingMedia(this.closest('.existing-media-card'), 1)" class="flex-1 px-2 py-1 text-sm border border-ivory-300 rounded hover:bg-white" title="Nach rechts verschieben">→</button>
                                             @if($item['type'] === 'image')
-                                                <button type="button" onclick="deleteImage({{ $item['id'] }}, '{{ csrf_token() }}')" class="px-2 py-1 text-sm text-red-600 border border-red-200 rounded hover:bg-red-50" title="Bild löschen">Löschen</button>
+                                                <button type="button" onclick="deleteImage({{ $item['id'] }}, '{{ csrf_token() }}')" class="col-span-2 px-2 py-1 text-sm text-red-600 border border-red-200 rounded hover:bg-red-50" title="Bild löschen">Löschen</button>
                                             @else
-                                                <button type="button" onclick="deleteVideo({{ $item['id'] }}, '{{ csrf_token() }}')" class="px-2 py-1 text-sm text-red-600 border border-red-200 rounded hover:bg-red-50" title="Video löschen">Löschen</button>
+                                                <button type="button" onclick="deleteVideo({{ $item['id'] }}, '{{ csrf_token() }}')" class="col-span-2 px-2 py-1 text-sm text-red-600 border border-red-200 rounded hover:bg-red-50" title="Video löschen">Löschen</button>
                                             @endif
                                         </div>
                                     </div>
@@ -161,7 +161,7 @@
                             <div id="media-type-order"></div>
                         </div>
                         <p class="text-sm text-ivory-500 mt-3">Neue Medien werden nach den vorhandenen Medien angehängt. Ziehen Sie sie hier in die gewünschte Reihenfolge untereinander.</p>
-                        <div id="media-preview" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4"></div>
+                        <div id="media-preview" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 mt-4"></div>
                     </div>
                 </div>
 
@@ -410,7 +410,7 @@
                 badge.textContent = item.type === 'video' ? 'Video' : 'Bild';
 
                 const controls = document.createElement('div');
-                controls.className = 'flex gap-2 mt-2';
+                controls.className = 'grid grid-cols-2 gap-2 mt-2';
 
                 const moveLeft = document.createElement('button');
                 moveLeft.type = 'button';
@@ -430,7 +430,7 @@
 
                 const removeButton = document.createElement('button');
                 removeButton.type = 'button';
-                removeButton.className = 'px-2 py-1 text-sm text-red-600 border border-red-200 rounded hover:bg-red-50';
+                removeButton.className = 'col-span-2 px-2 py-1 text-sm text-red-600 border border-red-200 rounded hover:bg-red-50';
                 removeButton.textContent = 'Löschen';
                 removeButton.title = 'Aus Auswahl entfernen';
                 removeButton.addEventListener('click', () => removeSelectedMedia(index));

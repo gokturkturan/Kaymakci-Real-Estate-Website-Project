@@ -4,6 +4,14 @@
 @section('header', 'Buchungen')
 
 @section('content')
+    @php
+        $statusColors = [
+            'pending' => 'bg-amber-100 text-amber-800',
+            'approved' => 'bg-emerald-100 text-emerald-800',
+            'rejected' => 'bg-red-100 text-red-800',
+            'cancelled' => 'bg-ivory-200 text-ivory-700',
+        ];
+    @endphp
     {{-- Stats --}}
     <div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-6">
         <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
@@ -47,8 +55,8 @@
                 <input type="date" name="to_date" id="to_date" value="{{ request('to_date') }}"
                        class="w-full lg:w-auto px-3 py-2 border border-ivory-300 rounded-lg bg-white focus:ring-2 focus:ring-gold-400 outline-none">
             </div>
-            <div class="flex items-center gap-3">
-                <button type="submit" class="px-4 py-2 bg-navy-800 text-ivory-50 rounded-lg hover:bg-navy-900 transition-colors font-medium">
+            <div class="flex items-center gap-3 sm:col-span-2 lg:col-span-1">
+                <button type="submit" class="flex-1 sm:flex-none px-4 py-2 bg-navy-800 text-ivory-50 rounded-lg hover:bg-navy-900 transition-colors font-medium">
                     Filtern
                 </button>
                 @if(request()->hasAny(['status', 'from_date', 'to_date']))
@@ -63,102 +71,98 @@
     {{-- Bookings List --}}
     <div class="bg-ivory-50 rounded-2xl shadow-soft border border-ivory-200 overflow-hidden">
         @if($bookings->count() > 0)
-            <div class="overflow-x-auto">
+            {{-- Phones, tablets & small laptops: one card per booking (the full table needs a wide screen) --}}
+            <ul class="xl:hidden divide-y divide-ivory-200 md:divide-y-0 md:grid md:grid-cols-2 md:gap-4 md:p-4">
+                @foreach($bookings as $booking)
+                    <li class="p-4 md:rounded-xl md:border md:border-ivory-200 {{ $booking->status === 'pending' ? 'bg-amber-50' : 'md:bg-white' }}">
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="min-w-0">
+                                <p class="font-medium text-ivory-900">{{ $booking->check_in->format('d.m.Y') }} – {{ $booking->check_out->format('d.m.Y') }}</p>
+                                <p class="text-sm text-ivory-500">{{ $booking->nights }} Nächte · {{ $booking->guests }} {{ $booking->guests == 1 ? 'Gast' : 'Gäste' }}</p>
+                            </div>
+                            <span class="flex-shrink-0 px-2 py-1 text-xs font-medium rounded-full {{ $statusColors[$booking->status] }}">
+                                {{ $booking->status_label }}
+                            </span>
+                        </div>
+
+                        <div class="mt-3 grid grid-cols-1 min-[480px]:grid-cols-2 gap-3 text-sm">
+                            <div class="min-w-0">
+                                <p class="text-xs uppercase text-ivory-400 font-medium">Immobilie</p>
+                                <a href="{{ route('admin.properties.edit', $booking->property) }}" class="text-gold-700 hover:text-gold-800 font-medium block truncate">
+                                    {{ $booking->property->title }}
+                                </a>
+                                <p class="text-ivory-500 truncate">{{ $booking->property->location }}</p>
+                            </div>
+                            <div class="min-w-0">
+                                <p class="text-xs uppercase text-ivory-400 font-medium">Kunde</p>
+                                <p class="font-medium text-ivory-900 truncate">{{ $booking->name }}</p>
+                                <a href="mailto:{{ $booking->email }}" class="text-ivory-500 hover:text-gold-700 block truncate">{{ $booking->email }}</a>
+                                @if($booking->phone)
+                                    <a href="tel:{{ preg_replace('/[^0-9+]/', '', $booking->phone) }}" class="text-ivory-500 hover:text-gold-700 block truncate">{{ $booking->phone }}</a>
+                                @endif
+                            </div>
+                        </div>
+
+                        <div class="mt-3 pt-3 border-t border-ivory-200/70 flex items-center justify-between gap-3">
+                            <div class="min-w-0">
+                                <p class="font-semibold text-ivory-900">{{ number_format($booking->display_total_price, 2, ',', '.') }} &euro;</p>
+                                <p class="text-xs text-ivory-500 truncate">{{ number_format($booking->display_price_per_person_per_night, 2, ',', '.') }} &euro; / Person/Nacht</p>
+                            </div>
+                            @include('admin.bookings._actions', ['booking' => $booking])
+                        </div>
+                    </li>
+                @endforeach
+            </ul>
+
+            {{-- Large screens: full table --}}
+            <div class="hidden xl:block overflow-x-auto">
                 <table class="w-full">
                     <thead class="bg-ivory-100 border-b border-ivory-200">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-ivory-500 uppercase">Zeitraum</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-ivory-500 uppercase">Immobilie</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-ivory-500 uppercase">Kunde</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-ivory-500 uppercase">Gäste</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-ivory-500 uppercase">Gesamtpreis</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-ivory-500 uppercase">Status</th>
-                            <th class="px-6 py-3 text-right text-xs font-medium text-ivory-500 uppercase">Aktionen</th>
+                            <th class="px-4 2xl:px-6 py-3 text-left text-xs font-medium text-ivory-500 uppercase">Zeitraum</th>
+                            <th class="px-4 2xl:px-6 py-3 text-left text-xs font-medium text-ivory-500 uppercase">Immobilie</th>
+                            <th class="px-4 2xl:px-6 py-3 text-left text-xs font-medium text-ivory-500 uppercase">Kunde</th>
+                            <th class="px-4 2xl:px-6 py-3 text-left text-xs font-medium text-ivory-500 uppercase">Gäste</th>
+                            <th class="px-4 2xl:px-6 py-3 text-left text-xs font-medium text-ivory-500 uppercase">Gesamtpreis</th>
+                            <th class="px-4 2xl:px-6 py-3 text-left text-xs font-medium text-ivory-500 uppercase">Status</th>
+                            <th class="px-4 2xl:px-6 py-3 text-right text-xs font-medium text-ivory-500 uppercase">Aktionen</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-ivory-200">
                         @foreach($bookings as $booking)
                             <tr class="hover:bg-ivory-50/80 transition-colors {{ $booking->status === 'pending' ? 'bg-amber-50' : '' }}">
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-4 2xl:px-6 py-4 whitespace-nowrap">
                                     <p class="font-medium text-ivory-900">{{ $booking->check_in->format('d.m.Y') }} - {{ $booking->check_out->format('d.m.Y') }}</p>
                                     <p class="text-sm text-ivory-500">{{ $booking->nights }} Nächte</p>
                                 </td>
-                                <td class="px-6 py-4">
+                                <td class="px-4 2xl:px-6 py-4">
                                     <a href="{{ route('admin.properties.edit', $booking->property) }}"
                                        class="text-gold-700 hover:text-gold-800 font-medium">
                                         {{ Str::limit($booking->property->title, 30) }}
                                     </a>
                                     <p class="text-sm text-ivory-500">{{ $booking->property->location }}</p>
                                 </td>
-                                <td class="px-6 py-4">
+                                <td class="px-4 2xl:px-6 py-4">
                                     <p class="font-medium text-ivory-900">{{ $booking->name }}</p>
                                     <p class="text-sm text-ivory-500">{{ $booking->email }}</p>
                                     @if($booking->phone)
                                         <p class="text-sm text-ivory-500">{{ $booking->phone }}</p>
                                     @endif
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-4 2xl:px-6 py-4 whitespace-nowrap">
                                     <span class="text-ivory-900">{{ $booking->guests }}</span>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-4 2xl:px-6 py-4 whitespace-nowrap">
                                     <p class="font-semibold text-ivory-900">{{ number_format($booking->display_total_price, 2, ',', '.') }} &euro;</p>
                                     <p class="text-sm text-ivory-500">{{ number_format($booking->display_price_per_person_per_night, 2, ',', '.') }} &euro; / Person/Nacht</p>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    @php
-                                        $statusColors = [
-                                            'pending' => 'bg-amber-100 text-amber-800',
-                                            'approved' => 'bg-emerald-100 text-emerald-800',
-                                            'rejected' => 'bg-red-100 text-red-800',
-                                            'cancelled' => 'bg-ivory-200 text-ivory-700',
-                                        ];
-                                    @endphp
+                                <td class="px-4 2xl:px-6 py-4 whitespace-nowrap">
                                     <span class="px-2 py-1 text-xs font-medium rounded-full {{ $statusColors[$booking->status] }}">
                                         {{ $booking->status_label }}
                                     </span>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-right">
-                                    <div class="flex items-center justify-end gap-2">
-                                        @if($booking->status === 'pending')
-                                            <form action="{{ route('admin.bookings.approve', $booking) }}" method="POST" class="inline">
-                                                @csrf
-                                                @method('PATCH')
-                                                <button type="submit" class="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
-                                                        title="Bestätigen">
-                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                                                    </svg>
-                                                </button>
-                                            </form>
-                                            <button type="button"
-                                                    onclick="showRejectModal({{ $booking->id }})"
-                                                    class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                                    title="Ablehnen">
-                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                                                </svg>
-                                            </button>
-                                        @endif
-                                        <a href="{{ route('admin.bookings.show', $booking) }}"
-                                           class="p-2 text-ivory-600 hover:bg-ivory-100 rounded-lg transition-colors"
-                                           title="Details">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                                            </svg>
-                                        </a>
-                                        <form action="{{ route('admin.bookings.destroy', $booking) }}" method="POST" class="inline"
-                                              onsubmit="return confirm('Buchung wirklich löschen?')">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="p-2 text-ivory-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                                    title="Löschen">
-                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                                </svg>
-                                            </button>
-                                        </form>
-                                    </div>
+                                <td class="px-4 2xl:px-6 py-4 whitespace-nowrap text-right">
+                                    @include('admin.bookings._actions', ['booking' => $booking])
                                 </td>
                             </tr>
                         @endforeach
@@ -166,7 +170,7 @@
                 </table>
             </div>
 
-            <div class="px-6 py-4 border-t border-ivory-200">
+            <div class="px-4 sm:px-6 py-4 border-t border-ivory-200">
                 {{ $bookings->links() }}
             </div>
         @else
@@ -180,8 +184,8 @@
     </div>
 
     {{-- Reject Modal --}}
-    <div id="rejectModal" class="fixed inset-0 bg-navy-950/60 hidden items-center justify-center z-50">
-        <div class="bg-ivory-50 rounded-2xl shadow-lift p-6 max-w-md w-full mx-4">
+    <div id="rejectModal" class="fixed inset-0 bg-navy-950/60 hidden items-end sm:items-center justify-center z-50 p-4 overflow-y-auto">
+        <div class="bg-ivory-50 rounded-2xl shadow-lift p-5 sm:p-6 max-w-md w-full">
             <h3 class="font-serif text-lg font-semibold text-ivory-900 mb-4">Buchung ablehnen</h3>
             <form id="rejectForm" method="POST">
                 @csrf

@@ -26,6 +26,7 @@ return [
     'filter_parking_only' => 'Len s parkovaním',
     'filter_submit' => 'Filtrovať',
     'filter_reset' => 'Vynulovať',
+    'filter_toggle' => 'Vyhľadávanie a filtre',
     'listings_heading' => 'Aktuálne ponuky (:count)',
     'listings_empty' => 'Zatiaľ žiadne ponuky.',
     'card_photos_count' => ':count fotiek',

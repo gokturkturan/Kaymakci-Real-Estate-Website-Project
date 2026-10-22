@@ -26,6 +26,7 @@ return [
     'filter_parking_only' => 'Nur mit Parkplatz',
     'filter_submit' => 'Filtern',
     'filter_reset' => 'Zurücksetzen',
+    'filter_toggle' => 'Suche & Filter',
     'listings_heading' => 'Aktuelle Immobilienangebote (:count)',
     'listings_empty' => 'Noch keine Angebote vorhanden.',
     'card_photos_count' => ':count Fotos',

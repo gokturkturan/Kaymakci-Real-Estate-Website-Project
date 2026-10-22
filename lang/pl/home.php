@@ -26,6 +26,7 @@ return [
     'filter_parking_only' => 'Tylko z parkingiem',
     'filter_submit' => 'Filtruj',
     'filter_reset' => 'Wyczyść',
+    'filter_toggle' => 'Wyszukiwanie i filtry',
     'listings_heading' => 'Aktualne oferty (:count)',
     'listings_empty' => 'Jeszcze brak ofert.',
     'card_photos_count' => ':count zdjęć',

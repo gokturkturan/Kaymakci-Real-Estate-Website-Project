@@ -37,7 +37,7 @@
         </script>
     @endif
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <style>[x-cloak]{display:none !important;}</style>
+    <style>[x-cloak]{display:none !important;} html, body { max-width: 100%; overflow-x: clip; }</style>
     <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
 </head>
 <body class="bg-ivory-100 text-ivory-900 font-sans min-h-screen antialiased" x-data="{ sidebarOpen: false }" @keydown.escape.window="sidebarOpen = false">
@@ -48,7 +48,7 @@
              class="fixed inset-0 bg-navy-950/60 z-30 lg:hidden"></div>
 
         <!-- Sidebar -->
-        <aside class="fixed inset-y-0 left-0 w-64 bg-gradient-to-b from-navy-900 to-navy-950 text-ivory-300 flex-shrink-0 z-40 transform transition-transform duration-200 -translate-x-full lg:static lg:translate-x-0 overflow-y-auto"
+        <aside class="fixed inset-y-0 left-0 w-64 bg-gradient-to-b from-navy-900 to-navy-950 text-ivory-300 flex-shrink-0 z-40 transform transition-transform duration-200 -translate-x-full lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 overflow-y-auto overscroll-contain"
                :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'">
             <div class="p-4 border-b border-navy-800/60 flex items-center justify-between">
                 <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3">
@@ -112,7 +112,7 @@
         <!-- Main Content -->
         <div class="flex-1 flex flex-col min-w-0">
             <!-- Top Bar -->
-            <header class="bg-ivory-50 border-b border-ivory-200 px-4 sm:px-6 py-4 flex justify-between items-center gap-3">
+            <header class="bg-ivory-50 border-b border-ivory-200 px-4 sm:px-6 py-3 sm:py-4 flex justify-between items-center gap-3">
                 <div class="flex items-center gap-3 min-w-0">
                     <button type="button" @click="sidebarOpen = true" class="lg:hidden p-2 -ml-2 rounded-lg text-ivory-600 hover:bg-ivory-100 flex-shrink-0" aria-label="Menü öffnen">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -122,7 +122,7 @@
                     <h1 class="font-serif text-lg sm:text-xl font-semibold text-ivory-900 truncate">@yield('header', 'Dashboard')</h1>
                 </div>
                 <div class="flex items-center gap-2 sm:gap-4 flex-shrink-0">
-                    <span class="text-ivory-600 hidden sm:inline text-sm">{{ Auth::user()->name }}</span>
+                    <span class="text-ivory-600 hidden sm:inline text-sm truncate max-w-[12rem]">{{ Auth::user()->name }}</span>
                     <form action="{{ route('admin.logout') }}" method="POST">
                         @csrf
                         <button type="submit" class="text-sm sm:text-base text-gold-700 hover:text-gold-800 font-medium transition-colors">
@@ -133,7 +133,7 @@
             </header>
 
             <!-- Page Content -->
-            <main class="flex-1 p-4 sm:p-6">
+            <main class="flex-1 p-4 sm:p-6 xl:p-8 w-full max-w-[1800px] mx-auto">
                 @if(session('success'))
                     <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-lg mb-6">
                         {{ session('success') }}
