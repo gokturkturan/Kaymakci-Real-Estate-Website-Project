@@ -52,7 +52,7 @@
                :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'">
             <div class="p-4 border-b border-navy-800/60 flex items-center justify-between">
                 <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3">
-                    <img src="{{ asset('images/logo.png') }}" alt="Logo" class="h-10 w-auto bg-ivory-50 rounded p-1">
+                    <img src="{{ asset('images/logo-mark.png') }}" alt="Logo" class="h-10 w-auto bg-ivory-50 rounded p-1">
                     <span class="font-serif font-semibold text-ivory-50 tracking-tight">Admin Panel</span>
                 </a>
                 <button type="button" @click="sidebarOpen = false" class="lg:hidden p-1 text-ivory-400 hover:text-ivory-50" aria-label="Menü schließen">

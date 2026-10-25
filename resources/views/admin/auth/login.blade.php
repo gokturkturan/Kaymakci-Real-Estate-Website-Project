@@ -43,7 +43,7 @@
     <div class="relative w-full max-w-md">
         <div class="bg-ivory-50 rounded-2xl shadow-lift p-8 sm:p-10">
             <div class="text-center mb-8">
-                <img src="{{ asset('images/logo.png') }}" alt="Logo" class="h-16 w-auto mx-auto mb-5">
+                <img src="{{ asset('images/logo-mark.png') }}" alt="Logo" class="h-16 w-auto mx-auto mb-5">
                 <h1 class="font-serif text-2xl font-semibold text-navy-900">Admin Login</h1>
                 <p class="text-ivory-600 mt-1 text-sm">Kaymakci Real Estate GmbH</p>
             </div>

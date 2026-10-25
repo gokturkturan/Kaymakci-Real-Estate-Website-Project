@@ -106,7 +106,7 @@
         <div class="max-w-7xl 2xl:max-w-[96rem] mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16 sm:h-20 gap-3">
                 <a href="{{ route('properties.index') }}" class="flex items-center gap-2 sm:gap-3 min-w-0" aria-label="{{ __('layout.home_aria') }}">
-                    <img src="{{ asset('images/logo.png') }}" alt="Kaymakci Real Estate Logo" class="h-10 sm:h-14 w-auto flex-shrink-0">
+                    <img src="{{ asset('images/logo-mark.png') }}" alt="Kaymakci Real Estate Logo" class="h-10 sm:h-14 w-auto flex-shrink-0">
                     <span class="font-serif text-base sm:text-xl font-semibold text-navy-900 truncate tracking-tight">Kaymakci Real Estate</span>
                 </a>
 
